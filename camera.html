@@ -1,0 +1,157 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Shader Camera</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
+<body>
+
+<p id="errorMessage"></p>
+
+<video id="webcam" autoplay width="1200" height="800" style="display: none; float:left;"></video>
+<canvas id="videoImage" width="1200" height="800" style="display: none; float:left;"></canvas>
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+
+<script>
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+window.URL = window.URL || window.webkitURL;
+
+var video = document.getElementById('webcam');
+
+  if (!navigator.getUserMedia)
+  {
+    document.getElementById('errorMessage').innerHTML =
+      'Sorry. <code>navigator.getUserMedia()</code> is not available.';
+  } else {
+    navigator.getUserMedia({video: true}, gotStream, noStream);
+  }
+
+function gotStream(stream)
+{
+  if (window.URL)
+  {   video.src = window.URL.createObjectURL(stream);   }
+  else // Opera
+  {   video.src = stream;   }
+
+  video.onerror = function(error)
+  {   stream.stop();   };
+
+  stream.onended = noStream;
+}
+
+function noStream(error)
+{
+  var msg = error.code === 1 ? 'User denied access to use camera.' : 'No camera available.';
+  document.getElementById('errorMessage').textContent = msg;
+}
+</script>
+
+<script src="js/Three.js"></script>
+
+<script src="js/shaders/CopyShader.js"></script>
+<script src="js/shaders/DotScreenShader.js"></script>
+<script src="js/shaders/RGBShiftShader.js"></script>
+
+<script src="js/postprocessing/EffectComposer.js"></script>
+<script src="js/postprocessing/RenderPass.js"></script>
+<script src="js/postprocessing/MaskPass.js"></script>
+<script src="js/postprocessing/ShaderPass.js"></script>
+
+<script>
+
+// standard global variables
+var container, scene, camera, renderer, composer;
+
+// custom global variables
+var video, videoImage, videoImageContext, videoTexture;
+
+init();
+animate();
+
+// FUNCTIONS
+function init()
+{
+  // SCENE
+  scene = new THREE.Scene();
+  // CAMERA
+  var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 20, FAR = 3000;
+  camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+  scene.add(camera);
+  camera.position.z = 800;
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+
+  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  container = document.getElementById( 'ThreeJS' );
+  container.appendChild( renderer.domElement );
+
+  // video
+
+  video = document.getElementById( 'webcam' );
+
+  videoImage = document.getElementById( 'videoImage' );
+  videoImageContext = videoImage.getContext( '2d' );
+  // background color if no video present
+  videoImageContext.fillStyle = '#555555';
+  videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+  videoTexture = new THREE.Texture( videoImage );
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+
+  var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
+  // the geometry on which the movie will be displayed;
+  //    movie image will be scaled to fit these dimensions.
+  var movieGeometry = new THREE.PlaneGeometry( SCREEN_WIDTH*0.6, SCREEN_HEIGHT, 1, 1);
+  var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+  scene.add(movieScreen);
+
+  // postprocessing
+
+  composer = new THREE.EffectComposer( renderer );
+  composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+  var effect = new THREE.ShaderPass( THREE.DotScreenShader );
+  effect.uniforms[ 'scale' ].value = 3;
+  composer.addPass( effect );
+
+  var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  effect.uniforms[ 'amount' ].value = 0.008;
+  effect.renderToScreen = true;
+  composer.addPass( effect );
+
+  window.addEventListener( 'resize', onWindowResize, false );
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  composer.setSize( window.innerWidth, window.innerHeight );
+}
+
+function animate()
+{
+  requestAnimationFrame( animate );
+  render();
+}
+
+function render()
+{
+  if ( video.readyState === video.HAVE_ENOUGH_DATA )
+  {
+    videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
+    if ( videoTexture )
+      videoTexture.needsUpdate = true;
+  }
+
+  composer.render();
+}
+
+</script>
+
+</body>
+</html>
