@@ -51,8 +51,11 @@ function noStream(error)
 <script src="js/Three.js"></script>
 
 <script src="js/shaders/CopyShader.js"></script>
-<script src="js/shaders/DotScreenShader.js"></script>
-<script src="js/shaders/RGBShiftShader.js"></script>
+<!-- <script src="js/shaders/DotScreenShader.js"></script>
+<script src="js/shaders/RGBShiftShader.js"></script> -->
+<script src="js/shaders/SpotifyShader.js"></script>
+<!-- <script src="js/shaders/LuminosityShader.js"></script> -->
+
 
 <script src="js/postprocessing/EffectComposer.js"></script>
 <script src="js/postprocessing/RenderPass.js"></script>
@@ -113,12 +116,11 @@ function init()
   composer = new THREE.EffectComposer( renderer );
   composer.addPass( new THREE.RenderPass( scene, camera ) );
 
-  var effect = new THREE.ShaderPass( THREE.DotScreenShader );
-  effect.uniforms[ 'scale' ].value = 3;
-  composer.addPass( effect );
+  // var effect = new THREE.ShaderPass( THREE.DotScreenShader );
+  // effect.uniforms[ 'scale' ].value = 3;
+  // composer.addPass( effect );
 
-  var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  effect.uniforms[ 'amount' ].value = 0.008;
+  var effect = new THREE.ShaderPass( THREE.SpotifyShader );
   effect.renderToScreen = true;
   composer.addPass( effect );
 
