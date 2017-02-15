@@ -10,7 +10,7 @@
  * angle: shift angle in radians
  */
 
-THREE.SpotifyShader = {
+THREE.PatternShader = {
 
   uniforms: {
 
@@ -38,6 +38,16 @@ THREE.SpotifyShader = {
     "uniform sampler2D tDiffuse;",
     "varying vec2 vUv;",
 
+    "float circle(in vec2 _st, in float _radius){",
+        "vec2 l = _st-vec2(0.5);",
+        "return 1.-smoothstep(_radius-(_radius*0.05), _radius+(_radius*0.05), dot(l,l)*4.0);",
+    "}",
+
+    "vec2 tile(vec2 _st, float _zoom){",
+        "_st *= _zoom;",
+        "return fract(_st);",
+    "}",
+
     "void main() {",
 
       // Black and white first
@@ -45,26 +55,11 @@ THREE.SpotifyShader = {
       "vec3 luma = vec3( 0.299, 0.587, 0.114 );",
       "float v = dot( original.xyz, luma );",
       "vec3 color = vec3(v);",
+      "vec2 grid = vUv;",
 
-      // Increase contrast
-      "float contrast = 0.5;",
-      "color.rgb = (color.rgb - 0.5) / (1.0 - contrast) + 0.5;",
-      "color.rgb += 0.4;",
+      "grid = tile(grid, 60.0);",
 
-
-      "vec3 dark = vec3(0.474,0.297,1.000);", // green
-      "vec3 bright = vec3(0.912,0.830,0.785);", // blue
-
-      "vec3 colorA = vec3(0.335,0.091,0.912);",
-      "vec3 colorB = vec3(1.000,0.539,0.530);",
-      "float pct = vUv.x;",
-      "vec3 gradiant = mix(colorA, colorB, pct);",
-      // "vec3 gradiant = mix(colorA, colorB, )"
-
-      // "color = color * bright;",
-      // "color = 1.0 - (1.0 - color.rgb)*(1.0 - dark.rgb);",
-
-      "color = mix(dark, bright, color.r);",
+      "color += circle(grid, 0.1);",
 
       "gl_FragColor = vec4( color, original.w );",
 

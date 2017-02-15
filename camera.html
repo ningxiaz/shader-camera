@@ -10,8 +10,8 @@
 
 <p id="errorMessage"></p>
 
-<video id="webcam" autoplay width="1200" height="800" style="display: none; float:left;"></video>
-<canvas id="videoImage" width="1200" height="800" style="display: none; float:left;"></canvas>
+<video id="webcam" autoplay width="1280" height="720" style="display: none; float:left;"></video>
+<canvas id="videoImage" width="1280" height="720" style="display: none; float:left;"></canvas>
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 
 <script>
@@ -51,10 +51,11 @@ function noStream(error)
 <script src="js/Three.js"></script>
 
 <script src="js/shaders/CopyShader.js"></script>
-<!-- <script src="js/shaders/DotScreenShader.js"></script>
-<script src="js/shaders/RGBShiftShader.js"></script> -->
+<script src="js/shaders/DotScreenShader.js"></script>
+<script src="js/shaders/RGBShiftShader.js"></script>
+<script src="js/shaders/LuminosityShader.js"></script>
 <script src="js/shaders/SpotifyShader.js"></script>
-<!-- <script src="js/shaders/LuminosityShader.js"></script> -->
+<script src="js/shaders/PatternShader.js"></script>
 
 
 <script src="js/postprocessing/EffectComposer.js"></script>
@@ -80,13 +81,13 @@ function init()
   scene = new THREE.Scene();
   // CAMERA
   var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 20, FAR = 3000;
+  var VIEW_ANGLE = 45, ASPECT =1, NEAR = 20, FAR = 3000;
   camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
   scene.add(camera);
-  camera.position.z = 800;
+  camera.position.z = 700;
   renderer = new THREE.WebGLRenderer( {antialias:true} );
 
-  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  renderer.setSize(SCREEN_HEIGHT, SCREEN_HEIGHT);
   container = document.getElementById( 'ThreeJS' );
   container.appendChild( renderer.domElement );
 
@@ -117,22 +118,39 @@ function init()
   composer.addPass( new THREE.RenderPass( scene, camera ) );
 
   // var effect = new THREE.ShaderPass( THREE.DotScreenShader );
-  // effect.uniforms[ 'scale' ].value = 3;
+  // effect.uniforms[ 'scale' ].value = 4;
   // composer.addPass( effect );
+
+
+  // acid screen with dots
+  var effect = new THREE.ShaderPass( THREE.PatternShader );
+  composer.addPass( effect );
 
   var effect = new THREE.ShaderPass( THREE.SpotifyShader );
   effect.renderToScreen = true;
   composer.addPass( effect );
 
+
+  // lumilosity with RGBshift
+  //  var effect = new THREE.ShaderPass( THREE.LuminosityShader );
+  // composer.addPass( effect );
+
+  // var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  // effect.uniforms[ 'amount' ].value = 0.01;
+  // effect.renderToScreen = true;
+  // composer.addPass( effect );
+
+
+
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  // camera.aspect = window.innerWidth / window.innerHeight;
+  // camera.updateProjectionMatrix();
 
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  composer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setSize( window.innerHeight, window.innerHeight );
+  composer.setSize( window.innerHeight, window.innerHeight );
 }
 
 function animate()
