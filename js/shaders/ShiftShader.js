@@ -67,10 +67,10 @@ THREE.ShiftShader = {
 
       "vec2 p = vUv;",
 
-      // "p = shift_xx(p, 24., 0.04);",
+      "p = shift_xx(p, 24., 0.04);",
       // "p = shift_xy(p, 24., 0.01);",
       // "p = shift_xx(p, 100., 0.01);",
-      "p = shift_yy(p, 50., 0.02);",
+      // "p = shift_yy(p, 50., 0.02);",
 
       "vec4 shifted  = texture2D( tDiffuse, p );",
 
