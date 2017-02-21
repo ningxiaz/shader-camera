@@ -54,8 +54,8 @@ function noStream(error)
 <script src="js/shaders/DotScreenShader.js"></script>
 <script src="js/shaders/RGBShiftShader.js"></script>
 <script src="js/shaders/LuminosityShader.js"></script>
-<script src="js/shaders/SpotifyShader.js"></script>
-<script src="js/shaders/PatternShader.js"></script>
+<script src="js/shaders/DuoToneShader.js"></script>
+<script src="js/shaders/DotPatternShader.js"></script>
 <script src="js/shaders/ShiftShader.js"></script>
 
 <script src="js/postprocessing/EffectComposer.js"></script>
@@ -124,12 +124,12 @@ function init()
 
   // acid screen with dots
 
-  // var effect = new THREE.ShaderPass( THREE.PatternShader );
-  // composer.addPass( effect );
+  var effect = new THREE.ShaderPass( THREE.DotPatternShader );
+  composer.addPass( effect );
 
-  // var effect = new THREE.ShaderPass( THREE.SpotifyShader );
-  // effect.renderToScreen = true;
-  // composer.addPass( effect );
+  var effect = new THREE.ShaderPass( THREE.DuoToneShader );
+  effect.renderToScreen = true;
+  composer.addPass( effect );
 
 
   // lumilosity with RGBshift
@@ -142,13 +142,14 @@ function init()
   // effect.renderToScreen = true;
   // composer.addPass( effect );
 
-  var effect = new THREE.ShaderPass( THREE.ShiftShader );
-  composer.addPass( effect );
+  // var effect = new THREE.ShaderPass( THREE.ShiftShader );
+  // effect.renderToScreen = true;
+  // composer.addPass( effect );
 
-  var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  effect.uniforms[ 'amount' ].value = 0.01;
-  effect.renderToScreen = true;
-  composer.addPass( effect );
+  // var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  // effect.uniforms[ 'amount' ].value = 0.01;
+  // effect.renderToScreen = true;
+  // composer.addPass( effect );
 
   window.addEventListener( 'resize', onWindowResize, false );
 }

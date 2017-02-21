@@ -1,23 +1,20 @@
 /**
  * @author Ningxia Zhang
  *
- * RGB Shift Shader
- * Shifts red and blue channels from center in opposite directions
- * Ported from http://kriss.cx/tom/2009/05/rgb-shift/
- * by Tom Butterworth / http://kriss.cx/tom/
+ * Dot Pattern Shader
+ * Render grid of dots on top of the image
  *
- * amount: shift distance (1 is width of input)
- * angle: shift angle in radians
+ * density: density of the grid
+ * size: size of dots
  */
 
-THREE.PatternShader = {
+THREE.DotPatternShader = {
 
   uniforms: {
 
-    "tDiffuse": { value: null }
-    // "amount":   { value: 0.005 },
-    // "angle":    { value: 0.0 }
-
+    "tDiffuse": { value: null },
+    "density":   { value: 60. },
+    "size":    { value: 0.1 }
   },
 
   vertexShader: [
@@ -36,6 +33,8 @@ THREE.PatternShader = {
   fragmentShader: [
 
     "uniform sampler2D tDiffuse;",
+    "uniform float density;",
+    "uniform float size;",
     "varying vec2 vUv;",
 
     "float circle(in vec2 _st, in float _radius){",
@@ -50,16 +49,13 @@ THREE.PatternShader = {
 
     "void main() {",
 
-      // Black and white first
       "vec4 original = texture2D( tDiffuse, vUv );",
-      "vec3 luma = vec3( 0.299, 0.587, 0.114 );",
-      "float v = dot( original.xyz, luma );",
-      "vec3 color = vec3(v);",
+      "vec3 color = original.xyz;",
       "vec2 grid = vUv;",
 
-      "grid = tile(grid, 60.0);",
+      "grid = tile(grid, density);",
 
-      "color += circle(grid, 0.1);",
+      "color += circle(grid, size);",
 
       "gl_FragColor = vec4( color, original.w );",
 

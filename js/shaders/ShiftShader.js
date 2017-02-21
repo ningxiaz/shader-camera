@@ -1,13 +1,9 @@
 /**
  * @author Ningxia Zhang
  *
- * RGB Shift Shader
- * Shifts red and blue channels from center in opposite directions
- * Ported from http://kriss.cx/tom/2009/05/rgb-shift/
- * by Tom Butterworth / http://kriss.cx/tom/
+ * Horizontally or vertically divide the image, and shift the image
  *
- * amount: shift distance (1 is width of input)
- * angle: shift angle in radians
+ * type: could be "irregular", "xx", "yy" or "xy"
  */
 
 THREE.ShiftShader = {
@@ -71,20 +67,14 @@ THREE.ShiftShader = {
 
       "vec2 p = vUv;",
 
-      "p = shift_xx(p, 24., 0.04);",
+      // "p = shift_xx(p, 24., 0.04);",
       // "p = shift_xy(p, 24., 0.01);",
       // "p = shift_xx(p, 100., 0.01);",
-      // "p = shift_yy(p, 24., 0.03);",
+      "p = shift_yy(p, 50., 0.02);",
 
       "vec4 shifted  = texture2D( tDiffuse, p );",
 
-      // black and white
-      "shifted.xyz += 0.3;",
-      "vec3 luma = vec3( 0.299, 0.587, 0.114 );",
-      "float v = dot( shifted.xyz, luma );",
-      "vec3 color = vec3(v);",
-
-      "gl_FragColor = vec4( color, shifted.w );",
+      "gl_FragColor = vec4( shifted.xyz, shifted.w );",
 
     "}"
 

@@ -1,16 +1,11 @@
 /**
  * @author Ningxia Zhang
  *
- * RGB Shift Shader
- * Shifts red and blue channels from center in opposite directions
- * Ported from http://kriss.cx/tom/2009/05/rgb-shift/
- * by Tom Butterworth / http://kriss.cx/tom/
+ * Duo Tone effects
  *
- * amount: shift distance (1 is width of input)
- * angle: shift angle in radians
  */
 
-THREE.SpotifyShader = {
+THREE.DuoToneShader = {
 
   uniforms: {
 
@@ -50,7 +45,6 @@ THREE.SpotifyShader = {
       "float contrast = 0.5;",
       "color.rgb = (color.rgb - 0.5) / (1.0 - contrast) + 0.5;",
       "color.rgb += 0.4;",
-
 
       "vec3 dark = vec3(0.474,0.297,1.000);", // green
       "vec3 bright = vec3(0.912,0.830,0.785);", // blue
