@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 </head>
-<body onload="UIinit()">
+<body>
 
 <style type="text/css">
   .selector {
@@ -21,6 +21,7 @@
     width: calc(100vw - 100vh);
     min-width: 400px;
     padding: 6px;
+    border-bottom: 1px #ddd solid;
     color: #111;
   }
 
@@ -54,11 +55,11 @@
 <canvas id="videoImage" width="1280" height="720" style="display: none; float:left;"></canvas>
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
 <div class="selector">
-  <div class="selector-item" data-type="lumilosity"><img src="img/lumilosity.png" /><span>B & W</span></div>
-  <div class="selector-item" data-type="RGBshift"><img src="img/RGBshift.png" /><span>RGB Shift</span></div>
-  <div class="selector-item" data-type="dotpattern"><img src="img/dotpattern.png" /><span>Dot Pattern</span></div>
-  <div class="selector-item" data-type="shift"><img src="img/shift.png" /><span>Vertical Shift</span></div>
-  <div class="selector-item" data-type="duotone"><img src="img/duotone.png" /><span>Duo Tone</span></div>
+  <div class="selector-item" onclick="toggleShader('lumilosity')" id="lumilosity"><img src="img/lumilosity.png" /><span>B & W</span></div>
+  <div class="selector-item" onclick="toggleShader('RGBshift')" id="RGBshift"><img src="img/RGBshift.png" /><span>RGB Shift</span></div>
+  <div class="selector-item" onclick="toggleShader('dotpattern')" id="dotpattern"><img src="img/dotpattern.png" /><span>Dot Pattern</span></div>
+  <div class="selector-item" onclick="toggleShader('shift')" id="shift"><img src="img/shift.png" /><span>Vertical Shift</span></div>
+  <div class="selector-item" onclick="toggleShader('duotone')" id="duotone"><img src="img/duotone.png" /><span>Duo Tone</span></div>
 </div>
 
 <script>
@@ -188,18 +189,10 @@ function init()
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
-function UIinit() {
-  var eles = document.getElementsByClassName('selector-item');
-  var children;
-  for(i = 0; i < eles.length; i ++) {
-    eles[i].onclick = toggleShader;
-  }
-}
-
-function toggleShader(event) {
-  var type = event.target.dataset.type;
+function toggleShader(type) {
+  console.log(type);
   shaderParams[type] = !shaderParams[type];
-  var classes = event.target.classList;
+  var classes = document.getElementById(type).classList;
   if(shaderParams[type]){
     classes.add('active');
   }
