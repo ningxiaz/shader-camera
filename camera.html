@@ -2,23 +2,46 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <title>Shader Camera</title>
+  <title>Shader Camera by Ningxia</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 </head>
-<body>
+<body onload="UIinit()">
+
+<style type="text/css">
+  .selector {
+    position: absolute;
+    left: 100vh;
+    top: 0;
+  }
+
+  .selector-item {
+    display: inline-block;
+    width: 160px;
+    height: 160px;
+    background-color: #ccc;
+    float: left;
+  }
+</style>
 
 <p id="errorMessage"></p>
 
 <video id="webcam" autoplay width="1280" height="720" style="display: none; float:left;"></video>
 <canvas id="videoImage" width="1280" height="720" style="display: none; float:left;"></canvas>
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<div class="selector">
+  <div class="selector-item" data-type="lumilosity">Lumilosity</div>
+  <div class="selector-item" data-type="RGBshift">RGBshift</div>
+  <div class="selector-item" data-type="dotpattern">Dot Pattern</div>
+  <div class="selector-item" data-type="duotone">Duo Tone</div>
+  <div class="selector-item" data-type="shift">Shift</div>
+</div>
 
 <script>
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-window.URL = window.URL || window.webkitURL;
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  window.URL = window.URL || window.webkitURL;
 
-var video = document.getElementById('webcam');
+  var video = document.getElementById('webcam');
 
   if (!navigator.getUserMedia)
   {
@@ -28,24 +51,25 @@ var video = document.getElementById('webcam');
     navigator.getUserMedia({video: true}, gotStream, noStream);
   }
 
-function gotStream(stream)
-{
-  if (window.URL)
-  {   video.src = window.URL.createObjectURL(stream);   }
-  else // Opera
-  {   video.src = stream;   }
+  function gotStream(stream)
+  {
+    if (window.URL)
+    {   video.src = window.URL.createObjectURL(stream);   }
+    else // Opera
+    {   video.src = stream;   }
 
-  video.onerror = function(error)
-  {   stream.stop();   };
+    video.onerror = function(error)
+    {   stream.stop();   };
 
-  stream.onended = noStream;
-}
+    stream.onended = noStream;
+  }
 
-function noStream(error)
-{
-  var msg = error.code === 1 ? 'User denied access to use camera.' : 'No camera available.';
-  document.getElementById('errorMessage').textContent = msg;
-}
+  function noStream(error)
+  {
+    var msg = error.code === 1 ? 'User denied access to use camera.' : 'No camera available.';
+    document.getElementById('errorMessage').textContent = msg;
+  }
+
 </script>
 
 <script src="js/Three.js"></script>
@@ -70,6 +94,15 @@ var container, scene, camera, renderer, composer;
 
 // custom global variables
 var video, videoImage, videoImageContext, videoTexture;
+
+// shader map
+var shaderParams = {
+  'lumilosity': false,
+  'RGBshift': false,
+  'dotpattern': false,
+  'duotone': false,
+  'shift': false,
+};
 
 init();
 animate();
@@ -114,50 +147,62 @@ function init()
 
   // postprocessing
 
-  composer = new THREE.EffectComposer( renderer );
-  composer.addPass( new THREE.RenderPass( scene, camera ) );
+  // init all the shaders
+  copyPass = new THREE.ShaderPass( THREE.CopyShader );
+  lumilosityPass = new THREE.ShaderPass( THREE.LuminosityShader );
 
-  // var effect = new THREE.ShaderPass( THREE.DotScreenShader );
-  // effect.uniforms[ 'scale' ].value = 4;
-  // composer.addPass( effect );
+  RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
+  RGBShiftPass.uniforms[ 'amount' ].value = 0.01;
 
+  dotpatternPass = new THREE.ShaderPass( THREE.DotPatternShader );
+  duotonePass = new THREE.ShaderPass( THREE.DuoToneShader );
 
-  // acid screen with dots
+  shiftPass = new THREE.ShaderPass( THREE.ShiftShader );
 
-  var effect = new THREE.ShaderPass( THREE.DotPatternShader );
-  composer.addPass( effect );
-
-  var effect = new THREE.ShaderPass( THREE.DuoToneShader );
-  effect.renderToScreen = true;
-  composer.addPass( effect );
-
-
-  // lumilosity with RGBshift
-
-  //  var effect = new THREE.ShaderPass( THREE.LuminosityShader );
-  // composer.addPass( effect );
-
-  // var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  // effect.uniforms[ 'amount' ].value = 0.01;
-  // effect.renderToScreen = true;
-  // composer.addPass( effect );
-
-  // var effect = new THREE.ShaderPass( THREE.ShiftShader );
-  // effect.renderToScreen = true;
-  // composer.addPass( effect );
-
-  // var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  // effect.uniforms[ 'amount' ].value = 0.01;
-  // effect.renderToScreen = true;
-  // composer.addPass( effect );
+  processShaders();
 
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
-function onWindowResize() {
-  // camera.aspect = window.innerWidth / window.innerHeight;
-  // camera.updateProjectionMatrix();
+function UIinit() {
+  var eles = document.getElementsByClassName('selector-item');
+  for(i = 0; i < eles.length; i ++) {
+    eles[i].onclick = toggleShader;
+  }
+}
 
+function toggleShader(event) {
+  var type = event.target.dataset.type;
+  shaderParams[type] = !shaderParams[type];
+  processShaders();
+}
+
+function processShaders() {
+  composer = new THREE.EffectComposer( renderer );
+  composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+  if(shaderParams.lumilosity) {
+    composer.addPass(lumilosityPass);
+  }
+  if(shaderParams.RGBshift) {
+    composer.addPass(RGBShiftPass);
+  }
+  if(shaderParams.dotpattern) {
+    composer.addPass(dotpatternPass);
+  }
+  if(shaderParams.duotone) {
+    composer.addPass(duotonePass);
+  }
+  if(shaderParams.shift) {
+    composer.addPass(shiftPass);
+  }
+
+  composer.addPass(copyPass);
+  copyPass.renderToScreen = true;
+}
+
+
+function onWindowResize() {
   renderer.setSize( window.innerHeight, window.innerHeight );
   composer.setSize( window.innerHeight, window.innerHeight );
 }
