@@ -8,11 +8,8 @@
 THREE.DuoToneShader = {
 
   uniforms: {
-
-    "tDiffuse": { value: null }
-    // "amount":   { value: 0.005 },
-    // "angle":    { value: 0.0 }
-
+    "tDiffuse": { value: null },
+    "type":   { value: 0 },
   },
 
   vertexShader: [
@@ -31,6 +28,7 @@ THREE.DuoToneShader = {
   fragmentShader: [
 
     "uniform sampler2D tDiffuse;",
+    "uniform int type;",
     "varying vec2 vUv;",
 
     "void main() {",
@@ -46,13 +44,41 @@ THREE.DuoToneShader = {
       "color.rgb = (color.rgb - 0.5) / (1.0 - contrast) + 0.5;",
       "color.rgb += 0.4;",
 
-      "vec3 dark = vec3(0.474,0.297,1.000);", // green
-      "vec3 bright = vec3(0.912,0.830,0.785);", // blue
+      "vec3 dark;",
+      "vec3 bright;",
 
-      "vec3 colorA = vec3(0.335,0.091,0.912);",
-      "vec3 colorB = vec3(1.000,0.539,0.530);",
-      "float pct = vUv.x;",
-      "vec3 gradiant = mix(colorA, colorB, pct);",
+      // default colors: purlple and yellow
+      "dark = vec3(0.474,0.297,1.000);", // purple
+      "bright = vec3(0.912,0.830,0.785);", // yellow
+
+      // red and blue
+      "if(type == 1) {",
+        "color.rgb += 0.2;",
+        "dark = vec3(0.850,0.276,0.227);", // red
+        "bright = vec3(0.619,0.776,0.960);", // blue
+      "}",
+
+      // orange and mauve
+      "if(type == 2) {",
+        "color.rgb += 0.1;",
+        "dark = vec3(0.990,0.525,0.193);", // orange
+        "bright = vec3(0.945,0.805,0.990);", // mauve
+      "}",
+
+      // single blue tone
+      "if(type == 3) {",
+        "color.rgb += 0.1;",
+        "dark = vec3(0.186,0.353,0.960);", // blue
+        // "bright = vec3(0.532,0.960,0.633);", // green
+        "bright = vec3(1., 1., 1.);", // white
+      "}",
+
+
+
+      // "vec3 colorA = vec3(0.335,0.091,0.912);",
+      // "vec3 colorB = vec3(1.000,0.539,0.530);",
+      // "float pct = vUv.x;",
+      // "vec3 gradiant = mix(colorA, colorB, pct);",
       // "vec3 gradiant = mix(colorA, colorB, )"
 
       // "color = color * bright;",

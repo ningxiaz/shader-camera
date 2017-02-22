@@ -13,6 +13,8 @@
     position: absolute;
     left: 100vh;
     top: 0;
+    height: 100vh;
+    overflow-y: scroll;
   }
 
   .selector-item {
@@ -59,7 +61,11 @@
   <div class="selector-item" onclick="toggleShader('RGBshift')" id="RGBshift"><img src="img/RGBshift.png" /><span>RGB Shift</span></div>
   <div class="selector-item" onclick="toggleShader('dotpattern')" id="dotpattern"><img src="img/dotpattern.png" /><span>Dot Pattern</span></div>
   <div class="selector-item" onclick="toggleShader('shift')" id="shift"><img src="img/shift.png" /><span>Vertical Shift</span></div>
-  <div class="selector-item" onclick="toggleShader('duotone')" id="duotone"><img src="img/duotone.png" /><span>Duo Tone</span></div>
+  <div class="selector-item" onclick="toggleShader('vshift')" id="vshift"><img src="img/vshift.png" /><span>Vertical Shift Dense</span></div>
+  <div class="selector-item" onclick="toggleShader('hshift')" id="hshift"><img src="img/hshift.png" /><span>Horizontal Shift</span></div>
+  <div class="selector-item" onclick="toggleShader('duotone')" id="duotone"><img src="img/duotone.png" /><span>Duo Tone A</span></div>
+  <div class="selector-item" onclick="toggleShader('duotone1')" id="duotone1"><img src="img/duotone1.png" /><span>Duo Tone B</span></div>
+  <div class="selector-item" onclick="toggleShader('monotone')" id="monotone"><img src="img/monotone.png" /><span>Monotone</span></div>
 </div>
 
 <script>
@@ -127,6 +133,10 @@ var shaderParams = {
   'dotpattern': false,
   'duotone': false,
   'shift': false,
+  'monotone': false,
+  'duotone1': false,
+  'vshift': false,
+  'hshift': false,
 };
 
 init();
@@ -184,6 +194,18 @@ function init()
 
   shiftPass = new THREE.ShaderPass( THREE.ShiftShader );
 
+  monotonePass = new THREE.ShaderPass( THREE.DuoToneShader );
+  monotonePass.uniforms[ 'type' ].value = 3;
+
+  duotone1Pass = new THREE.ShaderPass( THREE.DuoToneShader );
+  duotone1Pass.uniforms[ 'type' ].value = 1;
+
+  vshiftPass = new THREE.ShaderPass( THREE.ShiftShader );
+  vshiftPass.uniforms[ 'type' ].value = 1;
+
+  hshiftPass = new THREE.ShaderPass( THREE.ShiftShader );
+  hshiftPass.uniforms[ 'type' ].value = 2;
+
   processShaders();
 
   window.addEventListener( 'resize', onWindowResize, false );
@@ -220,6 +242,18 @@ function processShaders() {
   }
   if(shaderParams.shift) {
     composer.addPass(shiftPass);
+  }
+  if(shaderParams.monotone) {
+    composer.addPass(monotonePass);
+  }
+  if(shaderParams.duotone1) {
+    composer.addPass(duotone1Pass);
+  }
+  if(shaderParams.vshift) {
+    composer.addPass(vshiftPass);
+  }
+  if(shaderParams.hshift) {
+    composer.addPass(hshiftPass);
   }
 
   composer.addPass(copyPass);

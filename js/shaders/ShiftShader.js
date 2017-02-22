@@ -11,7 +11,7 @@ THREE.ShiftShader = {
   uniforms: {
 
     "tDiffuse": { value: null },
-    "type":   { value: "irregular" },
+    "type":   { value: 0 },
     // "angle":    { value: 0.0 }
 
   },
@@ -32,6 +32,7 @@ THREE.ShiftShader = {
   fragmentShader: [
 
     "uniform sampler2D tDiffuse;",
+    "uniform int type;",
     "varying vec2 vUv;",
 
     "vec2 be_irregular(vec2 p) {",
@@ -67,10 +68,17 @@ THREE.ShiftShader = {
 
       "vec2 p = vUv;",
 
-      "p = shift_xx(p, 24., 0.04);",
-      // "p = shift_xy(p, 24., 0.01);",
-      // "p = shift_xx(p, 100., 0.01);",
-      // "p = shift_yy(p, 50., 0.02);",
+      "if(type == 0) {",
+        "p = shift_xx(p, 24., 0.04);",
+      "}",
+
+      "if(type == 1) {",
+        "p = shift_xx(p, 120., 0.005);",
+      "}",
+
+      "if(type == 2) {",
+        "p = shift_yy(p, 160., 0.016);",
+      "}",
 
       "vec4 shifted  = texture2D( tDiffuse, p );",
 
