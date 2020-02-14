@@ -69,37 +69,46 @@
 </div>
 
 <script>
-  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  window.URL = window.URL || window.webkitURL;
-
   var video = document.getElementById('webcam');
 
-  if (!navigator.getUserMedia)
-  {
-    document.getElementById('errorMessage').innerHTML =
-      'Sorry. <code>navigator.getUserMedia()</code> is not available.';
-  } else {
-    navigator.getUserMedia({video: true}, gotStream, noStream);
+  const constraints = window.constraints = {
+    audio: false,
+    video: true
+  };
+
+  function handleError(error) {
+    if (error.name === 'ConstraintNotSatisfiedError') {
+      const v = constraints.video;
+      errorMsg(`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`);
+    } else if (error.name === 'PermissionDeniedError') {
+      errorMsg('Permissions have not been granted to use your camera and ' +
+        'microphone, you need to allow the page access to your devices in ' +
+        'order for the demo to work.');
+    }
+    errorMsg(`getUserMedia error: ${error.name}`, error);
   }
 
-  function gotStream(stream)
-  {
-    if (window.URL)
-    {   video.src = window.URL.createObjectURL(stream);   }
-    else // Opera
-    {   video.src = stream;   }
-
-    video.onerror = function(error)
-    {   stream.stop();   };
-
-    stream.onended = noStream;
+  function errorMsg(msg, error) {
+    console.log(msg);
+    if (typeof error !== 'undefined') {
+        console.error(error);
+    }
   }
 
-  function noStream(error)
-  {
-    var msg = error.code === 1 ? 'User denied access to use camera.' : 'No camera available.';
-    document.getElementById('errorMessage').textContent = msg;
-  }
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      var videoTracks = stream.getVideoTracks();
+      console.log('Got stream with constraints:', constraints);
+      console.log('Using video device: ' + videoTracks[0].label);
+      stream.onended = function() {
+        console.log('Stream ended');
+      };
+      window.stream = stream; // make variable available to console
+      video.srcObject = stream;
+    })
+    .catch(function(error) {
+      handleError(error);
+    });
 
 </script>
 
